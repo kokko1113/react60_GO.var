@@ -1,43 +1,76 @@
-import { useEffect, useRef, useState } from 'react'
-import './App.css'
-import { useLogin } from './hooks/useLogin'
-import Login from './components/login/login'
-import Select from './components/select/select'
-import UseField from './hooks/useField'
-import { Game } from './components/game/game'
-import { UseResult } from './hooks/useResult'
+import { useTodos } from "./hooks/useTodos"
+import TaskList from "./components/TaskList/TaskList"
+import CompletedTaskList from "./components/CompletedTaskList/CompletedTaskList"
 
-function App() {
-  const [scene, setScene] = useState("login")
-  const [level, setLevel] = useState(0)
-  const { ranking, getResult, putResult } = UseResult()
-  const { isLogin, login, logout } = useLogin(sceneChange)
-  const { field, isFinish } = UseField(level, getResult)
+const App = () => {
+  const {
+    todos,
+    completedTasks,
+    complete,
+    uncomplete,
+    addCategory,
+    removeCategory,
+    changeCategory,
+    addTask,
+    removeTask,
+    changeTaskName,
+  } = useTodos()
 
-  const changeLevel = (level) => {//ゲームのレベル変更
-    setLevel(level)
-  }
+  const handleClickAddCategory = () => addCategory()
 
-  useEffect(() => {//ログインしてたら選択画面に遷移
-    if (isLogin) {
-      setScene("select")
-    }
-  }, [isLogin])
+  const handleClickRemoveCategory = (catId) => removeCategory(catId)
 
-  function sceneChange(scene) {//画面遷移
-    setScene(scene)
-  }
+  const handleClickAddTask = (catId) => addTask(catId)
+
+  const handleClickRemoveTask = (taskId) => removeTask(taskId)
+
+  const handleInputTaskName = (taskId, value) => changeTaskName(taskId, value)
+
+  const handleInputCategory = (catId, value) => changeCategory(catId, value)
+
+  const handleCompleteTask = (taskId) => complete(taskId)
+
+  const handleUncompleteTask = (taskId) => uncomplete(taskId)
 
   return (
-    <>
-      {scene == "login" && <Login login={login}></Login>}
-      {scene == "select" &&
-        <Select sceneChange={sceneChange}
-          logout={logout} isLogin={isLogin} changeLevel={changeLevel}></Select>}
-      {scene == "game" &&
-        <Game field={field} isFinish={isFinish} ranking={ranking}
-          putResult={putResult} level={level}></Game>}
-    </>
+    <div>
+      <h1>
+        <input className="h1" type="text" />
+      </h1>
+      <section>
+        <h2>未完了タスク</h2>
+        <div className="d-flex gap-3 mx-2 overflow-x-scroll" style={{ width: "" }}>
+          {todos.map((list) => (
+            <TaskList
+              list={list}
+              onRemoveCategory={handleClickRemoveCategory}
+              onChangeCategory={handleInputCategory}
+              onAddTask={handleClickAddTask}
+              onRemoveTask={handleClickRemoveTask}
+              onChangeTaskName={handleInputTaskName}
+              onComplete={handleCompleteTask}
+              key={list.id}
+            />
+          ))}
+          <button
+            className="btn btn-outline-success shadow-sm flex-shrink-0"
+            onClick={handleClickAddCategory}
+            style={{ width: "150px" }}
+          >
+            カテゴリー追加
+          </button>
+        </div>
+      </section>
+      <section>
+        <h2>完了タスク</h2>
+        <CompletedTaskList
+          tasks={completedTasks}
+          onRemoveTask={handleClickRemoveTask}
+          onChangeTaskName={handleInputTaskName}
+          onUncomplete={handleUncompleteTask}
+        />
+      </section>
+    </div>
   )
 }
 
